@@ -1,16 +1,15 @@
 export default async function handler(req, res) {
-  // Erlaube nur Anfragen von deiner Webflow-Domain (sicherer)
   const allowedOrigin = "https://lucas-trendy-site-90c902.webflow.io";
 
-  // Setze CORS Header für alle Anfragen
+  // Setze die CORS-Header auf **jeden** Response
   res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  // Handle OPTIONS (Preflight) Anfragen, die der Browser vor POST schickt
+  // Handle Preflight-Request
   if (req.method === "OPTIONS") {
-    // Preflight Antwort: einfach 200 OK zurückgeben
-    return res.status(200).end();
+    // 204 No Content oder 200 OK reicht
+    return res.status(204).end();
   }
 
   if (req.method !== "POST") {
@@ -33,8 +32,13 @@ export default async function handler(req, res) {
     });
 
     const data = await openaiRes.json();
+
+    // Auch hier unbedingt den CORS-Header mitgeben
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     return res.status(200).json(data);
   } catch (error) {
+    // Auch bei Fehler CORS-Header setzen
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     return res.status(500).json({ error: error.message });
   }
 }
